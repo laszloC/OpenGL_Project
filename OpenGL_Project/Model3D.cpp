@@ -7,9 +7,6 @@
 //
 
 #include "Model3D.hpp"
-#include "glm/gtx/transform.inl"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.inl"
 
 
 namespace gps {
@@ -28,7 +25,6 @@ namespace gps {
 	{
 		ReadOBJ(fileName, basePath);
 	}
-
 
 	// Draw each mesh from the model
 	void Model3D::Draw(gps::Shader shaderProgram)
@@ -213,7 +209,7 @@ namespace gps {
 		glTexImage2D(
 			GL_TEXTURE_2D,
 			0,
-			GL_RGBA,//GL_SRGB, //GL_SRGB, //GL_RGBA,
+			GL_SRGB, //GL_SRGB,//GL_RGBA,
 			x,
 			y,
 			0,

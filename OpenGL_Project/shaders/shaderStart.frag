@@ -20,7 +20,7 @@ uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 
 vec3 ambient;
-float ambientStrength = 0.0f;
+float ambientStrength = 0.2f;
 vec3 diffuse;
 vec3 specular;
 float specularStrength = 1.5f;
@@ -111,7 +111,7 @@ void main()
 	computeLightComponents();
 
 	float shadow = computeShadow();
-    //float shadow = 0.0f;
+    // float shadow = 0.0f;
 
     float fogFactor = computeFog();
     vec4 fogColor = vec4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -122,9 +122,13 @@ void main()
 	// diffuse *= baseColor;
 	// specular *= baseColor;
 
-	ambient *= vec3(texture(diffuseTexture, fTexCoords));
-    diffuse *= vec3(texture(diffuseTexture, fTexCoords));
-	specular *= vec3(texture(specularTexture, fTexCoords));
+    vec4 colorFromDiffuseTexture = texture(diffuseTexture, fTexCoords);
+    vec4 colorFromSpecularTexture = texture(specularTexture, fTexCoords);
+    if (colorFromDiffuseTexture.a < 0.1)
+        discard;
+	ambient *= colorFromDiffuseTexture.rgb;
+    diffuse *= colorFromDiffuseTexture.rgb;
+	specular *= colorFromSpecularTexture.rgb;
 	
 	vec3 color = min((ambient + (1.0f - shadow)*diffuse) + (1.0f - shadow)*specular, 1.0f);
     

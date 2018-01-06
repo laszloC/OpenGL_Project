@@ -16,10 +16,7 @@
 #include "Mesh.hpp"
 
 #include "tiny_obj_loader.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include "glm/detail/type_mat.hpp"
-#include "glm/detail/type_mat.hpp"
 
 namespace gps {
 
@@ -40,7 +37,7 @@ namespace gps {
         std::vector<gps::Mesh> meshes;
 		// Associated textures
         std::vector<gps::Texture> loadedTextures;
-		
+
 		// Does the parsing of the .obj file and fills in the data structure
 		void ReadOBJ(std::string fileName, std::string basePath);
 
@@ -49,7 +46,6 @@ namespace gps {
 
 		// Reads the pixel data from an image file and loads it into the video memory
 		GLuint ReadTextureFromFile(const char* file_name);
-
     };
 }
 
