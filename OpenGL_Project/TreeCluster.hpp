@@ -18,11 +18,11 @@ namespace gps {
 		void rotate(float angle, glm::vec3 r);
 
 		void randomize(int minPosOffset = -10, int maxPosOffset = +10, float minScaleOffset = 0.9f, float maxScaleOffset = 1.2f);
-
-		void draw(Shader shader);
+		
+		void TreeCluster::draw(Shader shader, glm::mat4 view);
 
 		std::vector<Model3D> models;
-		std::vector<glm::mat4> transforms;
+		std::vector<glm::mat4> modelMatrices;
 
 	private:
 

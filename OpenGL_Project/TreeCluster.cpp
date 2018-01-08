@@ -20,28 +20,28 @@ namespace gps
 
 	void TreeCluster::translate(glm::vec3 t)
 	{
-		int size = this->transforms.size();
+		int size = this->modelMatrices.size();
 		for (int i = 0; i < size; ++i)
 		{
-			this->transforms[i] = glm::translate(this->transforms[i], t);
+			this->modelMatrices[i] = glm::translate(this->modelMatrices[i], t);
 		}
 	}
 
 	void TreeCluster::scale(glm::vec3 s)
 	{
-		int size = this->transforms.size();
+		int size = this->modelMatrices.size();
 		for (int i = 0; i < size; ++i)
 		{
-			this->transforms[i] = glm::scale(this->transforms[i], s);
+			this->modelMatrices[i] = glm::scale(this->modelMatrices[i], s);
 		}
 	}
 
 	void TreeCluster::rotate(float angle, glm::vec3 r)
 	{
-		int size = this->transforms.size();
+		int size = this->modelMatrices.size();
 		for (int i = 0; i < size; ++i)
 		{
-			this->transforms[i] = glm::rotate(this->transforms[i], glm::radians(angle), r);
+			this->modelMatrices[i] = glm::rotate(this->modelMatrices[i], glm::radians(angle), r);
 		}
 	}
 
@@ -52,7 +52,7 @@ namespace gps
 		{
 			Model3D tree = Model3D(filename, basePath);
 			this->models.push_back(tree);
-			this->transforms.emplace_back(1.0f);
+			this->modelMatrices.emplace_back(1.0f);
 		}
 	}
 
@@ -60,7 +60,7 @@ namespace gps
 	{
 		srand(time(NULL));
 
-		int size = this->transforms.size();
+		int size = this->modelMatrices.size();
 		for (int i = 0; i < size; ++i)
 		{
 			int interval = maxPosOffset - minPosOffset;
@@ -68,20 +68,20 @@ namespace gps
 			int randPosZ = rand() % interval + minPosOffset;
 			float randScale = (rand() / (float)RAND_MAX * (maxScaleOffset - minScaleOffset)) + minScaleOffset;
 			float randRot = (rand() / (float)RAND_MAX * (MAX_ROT_OFFSET - MIN_ROT_OFFSET)) + MIN_ROT_OFFSET;
-			this->transforms[i] = glm::scale(this->transforms[i], glm::vec3(randScale, randScale, randScale));
-			this->transforms[i] = glm::translate(this->transforms[i], glm::vec3(randPosX, 0.0f, randPosZ));
-			this->transforms[i] = glm::rotate(this->transforms[i], glm::radians(randRot), glm::vec3(0.0f, 1.0f, 0.0f));
+			this->modelMatrices[i] = glm::scale(this->modelMatrices[i], glm::vec3(randScale, randScale, randScale));
+			this->modelMatrices[i] = glm::translate(this->modelMatrices[i], glm::vec3(randPosX, 0.0f, randPosZ));
+			this->modelMatrices[i] = glm::rotate(this->modelMatrices[i], glm::radians(randRot), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 	}
 
-	void TreeCluster::draw(Shader shader)
+	void TreeCluster::draw(Shader shader, glm::mat4 view)
 	{
 		shader.useShaderProgram();
 		int size = this->models.size();
 		for (int i = 0; i < size; ++i)
 		{
-			shader.setMat4("model", this->transforms[i]);
-			shader.setMat3("normalMatrix", glm::mat3(glm::inverseTranspose(this->transforms[i])));
+			shader.setMat4("model", this->modelMatrices[i]);
+			shader.setMat3("normalMatrix", glm::mat3(glm::inverseTranspose(view * this->modelMatrices[i])));
 			models[i].Draw(shader);
 		}
 	}
