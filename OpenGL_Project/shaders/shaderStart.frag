@@ -12,6 +12,7 @@ uniform	mat3 normalMatrix;
 uniform mat3 lightDirMatrix;
 uniform	vec3 lightColor;
 uniform	vec3 lightDir;
+
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 uniform sampler2D shadowMap;
@@ -57,7 +58,7 @@ float computeShadow()
 	// perform perspective divide
     vec3 normalizedCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     if(normalizedCoords.z > 1.0f)
-        return 0.0f;
+        return 1.0f;
     // Transform to [0,1] range
     normalizedCoords = normalizedCoords * 0.5f + 0.5f;
     // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
@@ -65,8 +66,9 @@ float computeShadow()
     // Get depth of current fragment from light's perspective
     float currentDepth = normalizedCoords.z;
     // Check whether current frag pos is in shadow
-    float bias = 0.005f;
-    float shadow = currentDepth - bias> closestDepth  ? 1.0f : 0.0f;
+    //float bias = 0.005f;
+    //float shadow = currentDepth - bias> closestDepth  ? 1.0f : 0.0f;
+	float shadow = currentDepth > closestDepth ? 1.0f : 0.0f;
 
     return shadow;	
 }
