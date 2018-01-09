@@ -77,10 +77,6 @@ float computeShadow()
 		}    
 	}
 	shadow /= 9.0; 
-    // Check whether current frag pos is in shadow
-    //float bias = 0.005f;
-    //float shadow = currentDepth - bias> closestDepth  ? 1.0f : 0.0f;
-	//float shadow = currentDepth > closestDepth ? 1.0f : 0.0f;
     return shadow;	
 }
 

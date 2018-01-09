@@ -120,7 +120,8 @@ float computeShadow()
         for(int y = -1; y <=1; ++y)
         {
             float pcfDepth = texture(shadowMap, normalizedCoords.xy + vec2(x, y) * texelSize).r;
-            shadow += currentDepth - bias > pcfDepth ? 1.0f : 0.0f;
+            //shadow += currentDepth - bias > pcfDepth ? 1.0f : 0.0f;
+            shadow += currentDepth > pcfDepth ? 1.0f : 0.0f;
         }
     }
     shadow /= 9.0;
