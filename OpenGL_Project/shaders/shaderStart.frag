@@ -18,10 +18,10 @@ uniform sampler2D specularTexture;
 uniform sampler2D shadowMap;
 
 vec3 ambient;
-float ambientStrength = 0.2f;
+float ambientStrength = 0.5f;
 vec3 diffuse;
 vec3 specular;
-float specularStrength = 0.5f;
+float specularStrength = 1.0f;
 float shininess = 64.0f;
 
 vec3 o;
@@ -65,11 +65,22 @@ float computeShadow()
     float closestDepth = texture(shadowMap, normalizedCoords.xy).r;    
     // Get depth of current fragment from light's perspective
     float currentDepth = normalizedCoords.z;
+
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	for(int x = -1; x <= 1; ++x)
+	{
+		for(int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(shadowMap, normalizedCoords.xy + vec2(x, y) * texelSize).r; 
+			shadow += currentDepth > pcfDepth ? 1.0 : 0.0;        
+		}    
+	}
+	shadow /= 9.0; 
     // Check whether current frag pos is in shadow
     //float bias = 0.005f;
     //float shadow = currentDepth - bias> closestDepth  ? 1.0f : 0.0f;
-	float shadow = currentDepth > closestDepth ? 1.0f : 0.0f;
-
+	//float shadow = currentDepth > closestDepth ? 1.0f : 0.0f;
     return shadow;	
 }
 

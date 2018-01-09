@@ -56,16 +56,17 @@ namespace gps
 		}
 	}
 
-	void TreeCluster::randomize(int minPosOffset, int maxPosOffset, float minScaleOffset, float maxScaleOffset)
+	void TreeCluster::randomize(int maxXOffset, int maxYOffset, float minScaleOffset, float maxScaleOffset)
 	{
 		srand(time(NULL));
 
 		int size = this->modelMatrices.size();
 		for (int i = 0; i < size; ++i)
 		{
-			int interval = maxPosOffset - minPosOffset;
-			int randPosX = rand() % interval + minPosOffset;
-			int randPosZ = rand() % interval + minPosOffset;
+			int intervalX = 2 * maxXOffset;
+			int intervalY = 2 * maxYOffset;
+			int randPosX = rand() % intervalX + -maxXOffset;
+			int randPosZ = rand() % intervalY + -maxYOffset;
 			float randScale = (rand() / (float)RAND_MAX * (maxScaleOffset - minScaleOffset)) + minScaleOffset;
 			float randRot = (rand() / (float)RAND_MAX * (MAX_ROT_OFFSET - MIN_ROT_OFFSET)) + MIN_ROT_OFFSET;
 			this->modelMatrices[i] = glm::scale(this->modelMatrices[i], glm::vec3(randScale, randScale, randScale));
