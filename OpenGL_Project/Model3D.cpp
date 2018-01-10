@@ -120,7 +120,7 @@ namespace gps {
 					if (!ambientTexturePath.empty())
 					{
 						gps::Texture currentTexture;
-						currentTexture = LoadTexture(basePath + ambientTexturePath, "ambientTexture");
+						currentTexture = LoadTexture(basePath + ambientTexturePath, "material.ambient");
 						textures.push_back(currentTexture);
 					}
 
@@ -129,7 +129,7 @@ namespace gps {
 					if (!diffuseTexturePath.empty())
 					{
 						gps::Texture currentTexture;
-						currentTexture = LoadTexture(basePath + diffuseTexturePath, "diffuseTexture");
+						currentTexture = LoadTexture(basePath + diffuseTexturePath, "material.diffuse");
 						textures.push_back(currentTexture);
 					}
 
@@ -138,7 +138,7 @@ namespace gps {
 					if (!specularTexturePath.empty())
 					{
 						gps::Texture currentTexture;
-						currentTexture = LoadTexture(basePath + specularTexturePath, "specularTexture");
+						currentTexture = LoadTexture(basePath + specularTexturePath, "material.specular");
 						textures.push_back(currentTexture);
 					}
 				}

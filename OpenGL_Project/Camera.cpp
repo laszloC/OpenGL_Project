@@ -7,6 +7,7 @@
 //
 
 #include "Camera.hpp"
+#include <iostream>
 
 namespace gps {
     
@@ -44,6 +45,7 @@ namespace gps {
                 cameraPosition -= cameraRightDirection * speed;
                 break;
         }
+		std::cout << "Camera at: x: " << cameraPosition.x <<  ", y: " << cameraPosition.y << ", z:" << cameraPosition.z << std::endl;
     }
     
     void Camera::rotate(float pitch, float yaw)

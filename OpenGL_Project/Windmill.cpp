@@ -28,9 +28,9 @@ namespace gps
 		{
 			this->bladesRotationAngle = 0.0f;
 		}
-		this->bladesModelMatrix = glm::rotate(this->bladesModelMatrix, glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		//this->bladesModelMatrix = glm::rotate(this->bladesModelMatrix, glm::radians(-8.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		this->bladesModelMatrix = glm::rotate(this->bladesModelMatrix, this->bladesRotationAngle, glm::vec3(0.0f, 0.0f, 1.0f));
-		this->bladesModelMatrix = glm::rotate(this->bladesModelMatrix, glm::radians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		//this->bladesModelMatrix = glm::rotate(this->bladesModelMatrix, glm::radians(8.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 
 
@@ -56,6 +56,8 @@ namespace gps
 
 		this->windmillModelMatrix = glm::mat4(1.0f);
 		this->bladesModelMatrix = glm::mat4(1.0f);
+
+		//this->bladesModelMatrix = glm::rotate(this->bladesModelMatrix, glm::radians(-13.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 
 
