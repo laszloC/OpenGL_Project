@@ -56,9 +56,9 @@ uniform mat4 view;
 
 uniform sampler2D shadowMap;
 
-Phong calculateDirLight(DirLight light, vec3 normal, vec3 viewDir);
+Phong calculateDirLight(DirLight lightD, vec3 normal, vec3 viewDir);
 
-Phong calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+Phong calculatePointLight(PointLight lightP, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 float computeShadow()
 {
@@ -113,12 +113,12 @@ void main()
     vec3 positional0 = positional[0].ambient + positional[0].diffuse + positional[0].specular;
     vec3 positional1 = positional[1].ambient + positional[1].diffuse + positional[1].specular;
 
-    vec3 color = directionalC;
-    // vec3 color = positional0;
+    //vec3 color = directionalC;
+    //vec3 color = positional0;
     // vec3 color = positional1;
     // vec3 color = directionalC + positional0;
     // vec3 color = directionalC + positional1;
-    // vec3 color = directionalC + positional0 + positional1;
+    vec3 color = directionalC + positional0 + positional1;
 
     fColor = vec4(color, 1.0f);
     //fColor = vec4(normalEye, 1.0f);
@@ -126,12 +126,12 @@ void main()
     //fColor = fogColor * (1 - fogFactor) + vec4(color, 1.0f) *  fogFactor;
 }
 
-Phong calculateDirLight(DirLight light, vec3 normalN, vec3 viewDir){
+Phong calculateDirLight(DirLight lightD, vec3 normalN, vec3 viewDir){
 
     Phong phong;
 
-    vec3 lightDir = normalize(lightDirMatrix * light.direction);
-    //vec3 lightDir = normalize((view * vec4(light.direction, 1.0f)).xyz);
+    vec3 lightDir = normalize(lightDirMatrix * lightD.direction);
+    //vec3 lightDir = normalize((view * vec4(lightD.direction, 1.0f)).xyz);
 
     //diffuse shading
     float diff = max(dot(normalN, lightDir), 0.0f);
@@ -144,36 +144,40 @@ Phong calculateDirLight(DirLight light, vec3 normalN, vec3 viewDir){
     phong.diffuse = vec3(texture(material.diffuse, fTexCoords));
     phong.specular = vec3(texture(material.specular, fTexCoords));
 
-    phong.ambient *= light.ambient * light.color;
-    phong.diffuse *= light.diffuse * diff * light.color;
-    phong.specular *= light.specular * spec * light.color;
+    phong.ambient *= lightD.ambient * lightD.color;
+    phong.diffuse *= lightD.diffuse * diff * lightD.color;
+    phong.specular *= lightD.specular * spec * lightD.color;
     
     return phong;
 }
 
-Phong calculatePointLight(PointLight light, vec3 normalN, vec3 fragPos, vec3 viewDir)
+Phong calculatePointLight(PointLight lightP, vec3 normalN, vec3 fragPos, vec3 viewDir)
 {
     Phong phong;
 
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightPosEye = (view * vec4(lightP.position, 1.0f)).xyz;
+    vec3 lightDirN = normalize(lightPosEye - fragPos);
+
     //diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0f);
+    float diff = max(dot(normalN, lightDirN), 0.0f);
 
     //specular shading
-    vec3 halfVector = normalize(lightDir + viewDir);
+    vec3 halfVector = normalize(lightDirN + viewDir);
     float spec = pow(max(dot(halfVector, normalN), 0.0f), shininess);
 
-    float distance = length(lightDir - fragPos);
+    float dist = length(lightP.position - fragPos);
 
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-  
-    phong.ambient = light.ambient * vec3(texture(material.diffuse, fTexCoords)) * light.color;
-    phong.diffuse = light.diffuse * diff * vec3(texture(material.diffuse, fTexCoords)) * light.color;
-    phong.specular = light.specular * spec * vec3(texture(material.specular, fTexCoords)) * light.color;
+    float att = 1.0/(lightP.constant + lightP.linear * dist + lightP.quadratic * (dist * dist));
 
-    phong.ambient *= attenuation;
-    phong.diffuse *= attenuation;
-    phong.specular *= attenuation;
+    //float attenuation = 1.0f;
+    
+    phong.ambient = att * lightP.ambient * lightP.color;
+    phong.diffuse = att * lightP.diffuse * diff * lightP.color;
+    phong.specular = att * lightP.specular * spec * lightP.color;
+    
+    phong.ambient *= vec3(texture(material.diffuse, fTexCoords));
+    phong.diffuse *= vec3(texture(material.diffuse, fTexCoords));
+    phong.specular *= vec3(texture(material.specular, fTexCoords));
 
     return phong;
 }
