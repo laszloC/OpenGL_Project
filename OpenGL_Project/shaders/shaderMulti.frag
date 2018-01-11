@@ -118,6 +118,8 @@ void main()
     // vec3 color = positional1;
     // vec3 color = directionalC + positional0;
     // vec3 color = directionalC + positional1;
+    // vec3 l = (view * vec4(pointLights[0].position, 1.0f)).xyz;
+    // vec3 color = normalize(pointLights[0].position - fragPosEye.xyz);
     vec3 color = directionalC + positional0 + positional1;
 
     fColor = vec4(color, 1.0f);
@@ -156,6 +158,7 @@ Phong calculatePointLight(PointLight lightP, vec3 normalN, vec3 fragPos, vec3 vi
     Phong phong;
 
     vec3 lightPosEye = (view * vec4(lightP.position, 1.0f)).xyz;
+    // vec3 lightDirN = normalize(lightPosEye - fragPos);
     vec3 lightDirN = normalize(lightPosEye - fragPos);
 
     //diffuse shading
@@ -165,7 +168,7 @@ Phong calculatePointLight(PointLight lightP, vec3 normalN, vec3 fragPos, vec3 vi
     vec3 halfVector = normalize(lightDirN + viewDir);
     float spec = pow(max(dot(halfVector, normalN), 0.0f), shininess);
 
-    float dist = length(lightP.position - fragPos);
+    float dist = length(lightPosEye - fragPos);
 
     float att = 1.0/(lightP.constant + lightP.linear * dist + lightP.quadratic * (dist * dist));
 
