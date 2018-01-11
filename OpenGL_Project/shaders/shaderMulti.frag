@@ -36,6 +36,12 @@ struct Material{
     sampler2D specular;
 };
 
+struct Phong{
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
 float shininess = 64.0f;
 
 uniform Material material;
@@ -44,20 +50,22 @@ uniform DirLight dirLight;
 uniform PointLight pointLights[2];
 
 uniform	mat3 normalMatrix;
-//uniform mat3 lightDirMatrix;
+uniform mat3 lightDirMatrix;
+
+uniform mat4 view;
 
 uniform sampler2D shadowMap;
 
-vec3 calculateDirLight(DirLight light, vec3 normal, vec3 viewDir);
+Phong calculateDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
-vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDir);
+Phong calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 float computeShadow()
 {
     // perform perspective divide
     vec3 normalizedCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     if(normalizedCoords.z > 1.0f)
-        return 1.0f;
+        return 0.0f;
     // Transform to [0,1] range
     normalizedCoords = normalizedCoords * 0.5f + 0.5f;
     // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
@@ -65,7 +73,7 @@ float computeShadow()
     // Get depth of current fragment from light's perspective
     float currentDepth = normalizedCoords.z;
     float bias = 0.005;
-    float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
+    float shadow = currentDepth - bias> closestDepth ? 1.0f : 0.0f;
 	
     return shadow;	
 }
@@ -80,66 +88,92 @@ float computeFog(){
 
 void main() 
 {
-    //properties
-    vec3 cameraPosEye = vec3(0.0f);
-
-    vec3 normalEye = normalize(normalMatrix * normal);
-
-    vec3 viewDirN = normalize(cameraPosEye - fragPosEye.xyz);
-
-    vec3 color = calculateDirLight(dirLight, normalEye, viewDirN);
-    
     vec4 diffTex = texture(material.diffuse, fTexCoords);
     if (diffTex.a < 0.1){
         discard;    
     }
 
+    vec3 cameraPosEye = vec3(0.0f);// in eye coordinates the camera is at the origin
+
+    vec3 normalEye = normalize(normalMatrix * normal);
+
+    vec3 viewDirN = normalize(cameraPosEye - fragPosEye.xyz);
+
+    Phong directional = calculateDirLight(dirLight, normalEye, viewDirN);
+
+    float shadow = computeShadow();
+
+    vec3 directionalC = directional.ambient + (1.0f - shadow) * directional.diffuse + (1.0f - shadow) * directional.specular;
+
+    Phong positional[2];
+    
+    positional[0] = calculatePointLight(pointLights[0], normalEye, fragPosEye.xyz, viewDirN);
+    positional[1] = calculatePointLight(pointLights[1], normalEye, fragPosEye.xyz, viewDirN);
+
+    vec3 positional0 = positional[0].ambient + positional[0].diffuse + positional[0].specular;
+    vec3 positional1 = positional[1].ambient + positional[1].diffuse + positional[1].specular;
+
+    vec3 color = directionalC;
+    // vec3 color = positional0;
+    // vec3 color = positional1;
+    // vec3 color = directionalC + positional0;
+    // vec3 color = directionalC + positional1;
+    // vec3 color = directionalC + positional0 + positional1;
+
     fColor = vec4(color, 1.0f);
+    //fColor = vec4(normalEye, 1.0f);
+    //fColor = vec4(normalize(lightDirMatrix * dirLight.direction), 1.0f);
     //fColor = fogColor * (1 - fogFactor) + vec4(color, 1.0f) *  fogFactor;
 }
 
-vec3 calculateDirLight(DirLight light, vec3 normalN, vec3 viewDir){
+Phong calculateDirLight(DirLight light, vec3 normalN, vec3 viewDir){
 
-    //vec3 lightDir = normalize(lightDirMatrix * light.direction);
-    vec3 lightDir = normalize(light.direction);
+    Phong phong;
+
+    vec3 lightDir = normalize(lightDirMatrix * light.direction);
+    //vec3 lightDir = normalize((view * vec4(light.direction, 1.0f)).xyz);
 
     //diffuse shading
-    float diff = max(dot(normalN, light.direction), 0.0f);
+    float diff = max(dot(normalN, lightDir), 0.0f);
     
     //specular shading
     vec3 halfVector = normalize(lightDir + viewDir);
     float spec = pow(max(dot(halfVector, normalN), 0.0f), shininess);
 
-    vec3 ambient = light.ambient * vec3(texture(material.ambient, fTexCoords)) * light.color;
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, fTexCoords)) * light.color;
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, fTexCoords)) * light.color;
+    phong.ambient = vec3(texture(material.diffuse, fTexCoords));
+    phong.diffuse = vec3(texture(material.diffuse, fTexCoords));
+    phong.specular = vec3(texture(material.specular, fTexCoords));
+
+    phong.ambient *= light.ambient * light.color;
+    phong.diffuse *= light.diffuse * diff * light.color;
+    phong.specular *= light.specular * spec * light.color;
     
-    //float shadow = computeShadow();
-    float shadow = 0.0f;
-    return min((ambient + (1.0f - shadow) * diffuse + (1.0f - shadow) * specular), 1.0f);
+    return phong;
 }
 
-vec3 calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
+Phong calculatePointLight(PointLight light, vec3 normalN, vec3 fragPos, vec3 viewDir)
 {
+    Phong phong;
+
     vec3 lightDir = normalize(light.position - fragPos);
     //diffuse shading
     float diff = max(dot(normal, lightDir), 0.0f);
 
     //specular shading
-    vec3 halfVector = normalize(light.position + viewDir);
-    float spec = pow(max(dot(halfVector, normal), 0.0f), shininess);
+    vec3 halfVector = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(halfVector, normalN), 0.0f), shininess);
 
-    float distance = length(light.position - fragPos);
+    float distance = length(lightDir - fragPos);
 
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
   
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, fTexCoords));
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, fTexCoords));
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, fTexCoords));
+    phong.ambient = light.ambient * vec3(texture(material.diffuse, fTexCoords)) * light.color;
+    phong.diffuse = light.diffuse * diff * vec3(texture(material.diffuse, fTexCoords)) * light.color;
+    phong.specular = light.specular * spec * vec3(texture(material.specular, fTexCoords)) * light.color;
 
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
+    phong.ambient *= attenuation;
+    phong.diffuse *= attenuation;
+    phong.specular *= attenuation;
 
-    return (ambient + diffuse + specular);
+    return phong;
 }

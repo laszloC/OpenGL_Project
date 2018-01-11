@@ -19,7 +19,7 @@ void main()
 	//compute eye space coordinates
 	fragPosEye = view * model * vec4(vPosition, 1.0f);
 	normal = vNormal;
-	fragPosLightSpace = lightSpaceTrMatrix * model * vec4(vPosition, 1.0f);
 	fTexCoords = vTexCoords;
+	fragPosLightSpace = lightSpaceTrMatrix * model * vec4(vPosition, 1.0f);
 	gl_Position = projection * view * model * vec4(vPosition, 1.0f);
 }
