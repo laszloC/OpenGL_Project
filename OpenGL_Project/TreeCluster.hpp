@@ -17,7 +17,7 @@ namespace gps {
 		void scale(glm::vec3 s);
 		void rotate(float angle, glm::vec3 r);
 
-		void randomize(int minPosOffset = -10, int maxPosOffset = +10, float minScaleOffset = 0.9f, float maxScaleOffset = 1.2f);
+		void randomize(int maxXOffset = 10, int maxYOffset = 10, float minScaleOffset = 0.9f, float maxScaleOffset = 1.2f);
 		
 		void TreeCluster::draw(Shader shader, glm::mat4 view);
 

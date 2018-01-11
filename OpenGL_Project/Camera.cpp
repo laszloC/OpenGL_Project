@@ -47,7 +47,7 @@ namespace gps {
                 break;
         }
 		//std::cout << "Camera at: x: " << cameraPosition.x <<  ", y: " << cameraPosition.y << ", z:" << cameraPosition.z << std::endl;
-		//cameraPosition.y = 0.0f;
+		cameraPosition.y = 0.0f;
     }
     
     void Camera::rotate(float pitch, float yaw)

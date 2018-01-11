@@ -7,7 +7,7 @@ in vec2 fTexCoords;
 
 out vec4 fColor;
 
-//lighting
+//directional light
 struct DirLight{
     vec3 direction;
     vec3 color;
@@ -17,6 +17,7 @@ struct DirLight{
     vec3 specular;
 };
 
+//posiitional light
 struct PointLight{
     vec3 position;
     vec3 color;
@@ -30,12 +31,14 @@ struct PointLight{
     vec3 specular;
 };
 
+//MAterial components
 struct Material{
     sampler2D ambient;
     sampler2D diffuse;
     sampler2D specular;
 };
 
+//Phong shading components
 struct Phong{
     vec3 ambient;
     vec3 diffuse;
@@ -44,47 +47,31 @@ struct Phong{
 
 float shininess = 64.0f;
 
+//fog attributes
+uniform bool fogEnabled;
+uniform vec3 fogColor;
+uniform float fogDensity;
+
 uniform Material material;
 
+//lights
 uniform DirLight dirLight;
 uniform PointLight pointLights[2];
 
 uniform	mat3 normalMatrix;
 uniform mat3 lightDirMatrix;
-
 uniform mat4 view;
 
 uniform sampler2D shadowMap;
 
+//function declarations
 Phong calculateDirLight(DirLight lightD, vec3 normal, vec3 viewDir);
 
 Phong calculatePointLight(PointLight lightP, vec3 normal, vec3 fragPos, vec3 viewDir);
 
-float computeShadow()
-{
-    // perform perspective divide
-    vec3 normalizedCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    if(normalizedCoords.z > 1.0f)
-        return 0.0f;
-    // Transform to [0,1] range
-    normalizedCoords = normalizedCoords * 0.5f + 0.5f;
-    // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(shadowMap, normalizedCoords.xy).r;    
-    // Get depth of current fragment from light's perspective
-    float currentDepth = normalizedCoords.z;
-    float bias = 0.005;
-    float shadow = currentDepth - bias> closestDepth ? 1.0f : 0.0f;
-	
-    return shadow;	
-}
+float computeShadow();
 
-float computeFog(){
-    float fogDensity = 0.1f;
-    float fragmentDistance = length(fragPosEye);
-    float fogFactor = exp(-pow(fragmentDistance * fogDensity, 1));
-
-    return clamp(fogFactor, 0.0f, 1.0f);
-}
+float computeFog();
 
 void main() 
 {
@@ -125,7 +112,10 @@ void main()
     fColor = vec4(color, 1.0f);
     //fColor = vec4(normalEye, 1.0f);
     //fColor = vec4(normalize(lightDirMatrix * dirLight.direction), 1.0f);
-    //fColor = fogColor * (1 - fogFactor) + vec4(color, 1.0f) *  fogFactor;
+    if (fogEnabled){      
+        float fogFactor = computeFog();
+        fColor = vec4(fogColor, 1.0f) * (1 - fogFactor) + vec4(color, 1.0f) *  fogFactor;
+    }
 }
 
 Phong calculateDirLight(DirLight lightD, vec3 normalN, vec3 viewDir){
@@ -183,4 +173,29 @@ Phong calculatePointLight(PointLight lightP, vec3 normalN, vec3 fragPos, vec3 vi
     phong.specular *= vec3(texture(material.specular, fTexCoords));
 
     return phong;
+}
+
+float computeShadow()
+{
+    // perform perspective divide
+    vec3 normalizedCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    if(normalizedCoords.z > 1.0f)
+        return 0.0f;
+    // Transform to [0,1] range
+    normalizedCoords = normalizedCoords * 0.5f + 0.5f;
+    // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, normalizedCoords.xy).r;    
+    // Get depth of current fragment from light's perspective
+    float currentDepth = normalizedCoords.z;
+    float bias = 0.005;
+    float shadow = currentDepth - bias> closestDepth ? 1.0f : 0.0f;
+	
+    return shadow;	
+}
+
+float computeFog(){
+    float fragmentDistance = length(fragPosEye);
+    float fogFactor = exp(-pow(fragmentDistance * fogDensity, 1));
+
+    return clamp(fogFactor, 0.0f, 1.0f);
 }
