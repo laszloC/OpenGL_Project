@@ -1,4 +1,4 @@
-#version 410 core
+#version 400 core
 
 layout (location = 0) in vec3 vertexPosition;
 out vec3 textureCoordinates;

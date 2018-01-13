@@ -1,4 +1,4 @@
-#version 410 core
+#version 400 core
 
 in vec3 normal;
 in vec4 fragPosEye;
@@ -187,7 +187,8 @@ float computeShadow()
     float closestDepth = texture(shadowMap, normalizedCoords.xy).r;    
     // Get depth of current fragment from light's perspective
     float currentDepth = normalizedCoords.z;
-    float bias = 0.005;
+    //float bias = 0.005;
+    float bias = max(0.05 * (1.0 - dot(normal, dirLight.direction)), 0.0005);
     float shadow = currentDepth - bias> closestDepth ? 1.0f : 0.0f;
 	
     return shadow;	
