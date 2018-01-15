@@ -50,8 +50,8 @@ namespace gps
 	{
 		for (int i = 0; i < size; ++i)
 		{
-			Model3D tree = Model3D(filename, basePath);
-			this->models.push_back(tree);
+			
+			this->model = Model3D(filename, basePath);
 			this->modelMatrices.emplace_back(1.0f);
 		}
 	}
@@ -78,12 +78,12 @@ namespace gps
 	void TreeCluster::draw(Shader shader, glm::mat4 view)
 	{
 		shader.useShaderProgram();
-		int size = this->models.size();
+		int size = this->modelMatrices.size();
 		for (int i = 0; i < size; ++i)
 		{
 			shader.setMat4("model", this->modelMatrices[i]);
 			shader.setMat3("normalMatrix", glm::mat3(glm::inverseTranspose(view * this->modelMatrices[i])));
-			models[i].Draw(shader);
+			model.Draw(shader);
 		}
 	}
 }
