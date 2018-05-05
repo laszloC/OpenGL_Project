@@ -53,6 +53,8 @@ void computeLightComponents()
 	specular = specularStrength * specCoeff * lightColor;
 }
 
+vec4 text;
+
 float computeShadow()
 {	
 	// perform perspective divide
@@ -77,7 +79,9 @@ float computeShadow()
 		}    
 	}
 	shadow /= 9.0; 
-    return shadow;	
+	
+	text = texture(shadowMap, normalizedCoords.xy);
+    //return shadow;
 }
 
 void main() 
@@ -102,6 +106,6 @@ void main()
 	//modulate with shadow
 	vec3 color = min((ambient + (1.0f - shadow)*diffuse) + (1.0f - shadow)*specular, 1.0f);
     
-    fColor = vec4(color, 1.0f);
-    //fColor = vec4(o, 1.0f);
+    //fColor = vec4(color, 1.0f);
+    //fColor = text;
 }
